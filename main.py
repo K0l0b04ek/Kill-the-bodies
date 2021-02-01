@@ -360,6 +360,8 @@ class Character:
         self.facing = 1
 
     def walk(self, x, y):
+        global player
+        pl = player
         # direction - массив из двух int-элементов 0, 1 или -1
         if not x and not y:
             return
@@ -373,9 +375,35 @@ class Character:
         if hasattr(self, 'walk_time'):
             self.walk_time += 1
 
+        # block_hit_list = []
+        # for block in obstacles_gr:
+        #     if pygame.sprite.collide_rect(pl, block):
+        #         block_hit_list.append(block)
+        #
+        # for block in block_hit_list:
+        #     if self.velocity[0] > 0 and pl.rect.right + self.velocity[0] > block.rect.left:
+        #         self.velocity[0] = 0
+        #         pl.rect.right = block.rect.left - 1
+        #     elif self.velocity[0] < 0 and pl.rect.left - self.velocity[0] < block.rect.right:
+        #         self.velocity[0] = 0
+        #         pl.rect.left = block.rect.right + 1
+        #
+        # block_hit_list = []
+        # for block in obstacles_gr:
+        #     if pygame.sprite.collide_rect(pl, block):
+        #         block_hit_list.append(block)
+        #
+        # for block in block_hit_list:
+        #     if self.velocity[1] > 0 and pl.rect.bottom + self.velocity[1] > block.rect.top:
+        #         self.velocity[1] = 0
+        #         pl.rect.bottom = block.rect.top - 1
+        #     elif self.velocity[1] < 0 and pl.rect.top - self.velocity[1] < block.rect.bottom:
+        #         self.velocity[1] = 0
+        #         pl.rect.top = block.rect.bottom + 1
+
         return motion
 
-    def update(self, *args, **kwargs) -> None:
+    def update(self, pl) -> None:
         v = self.velocity
         self.position += v
 
@@ -387,9 +415,27 @@ class Character:
 
         # Проверка коллизии
         if hasattr(self, 'rect'):
-            pass
-            # collided = pygame.sprite.spritecollide(self, obstacles_gr, False)
-            #
+            block_hit_list = []
+            for block in obstacles_gr:
+                if pygame.sprite.collide_rect(pl, block):
+                    block_hit_list.append(block)
+
+            for block in block_hit_list:
+                if self.velocity[0] > 0 and pl.rect.right + self.velocity[0] > block.rect.left:
+                    self.position[0] = block.rect.left - ceil
+                elif self.velocity[0] < 0 and pl.rect.left - self.velocity[0] < block.rect.right:
+                    self.position[0] = block.rect.right
+
+            block_hit_list = []
+            for block in obstacles_gr:
+                if pygame.sprite.collide_rect(pl, block):
+                    block_hit_list.append(block)
+
+            for block in block_hit_list:
+                if self.velocity[1] > 0 and pl.rect.bottom + self.velocity[1] > block.rect.top:
+                    self.position[1] = block.rect.top - ceil
+                elif self.velocity[1] < 0 and pl.rect.top - self.velocity[1] < block.rect.bottom:
+                    self.position[1] = block.rect.bottom
             # if collided:
             #     c = collided[0]
             #
@@ -558,7 +604,7 @@ class Player(Sprite, Character):
                 self.rect.top = block.rect.bottom
 
         # PLAYER
-        Character.update(self)
+        Character.update(self, self)
 
         # Если смотрит влево, то поворачиваем картинку
         if self.facing == -1:
@@ -619,7 +665,7 @@ class Mob(Sprite, Character, PatrolAI):
 
     def update(self, *args, **kwargs) -> None:
         PatrolAI.update(self)
-        Character.update(self)
+        Character.update(self, self)
 
         self.render_health()
         self.render_mana()
@@ -705,10 +751,10 @@ def update_hero_movement(hero: Player, keys):
 if __name__ == '__main__':
     # КНОПКИ
     move_direction_keys = {
-        pygame.K_w: (+0.0, -1.0),
-        pygame.K_s: (+0.0, +1.0),
-        pygame.K_a: (-1.0, +0.0),
-        pygame.K_d: (+1.0, +0.0)
+        pygame.K_w: (0.0, -1.0),
+        pygame.K_s: (0.0, 1.0),
+        pygame.K_a: (-1.0, 0.0),
+        pygame.K_d: (1.0, 0.0)
     }
     keys_pressed = {
         pygame.K_w: False,
@@ -788,8 +834,8 @@ if __name__ == '__main__':
                         keys_pressed[key] = False
 
             # UPDATE
-            all_sprites.update()
             update_hero_movement(player, keys_pressed)
+            all_sprites.update()
             camera.update(player)
             for sprite in all_sprites:
                 camera.apply(sprite)
