@@ -1,4 +1,4 @@
-# import random
+import random
 from files import *
 pygame.font.init()
 import numpy as np
@@ -8,7 +8,7 @@ import threading
 
 def terminate():
     # здесь мы завершаем программу полностью и записываем сохранения
-    save_changes()
+    save_changes(FPS, volume)
     pygame.quit()
     sys.exit()
 
@@ -62,6 +62,7 @@ def start_screen():
         screen.blit(tile_images['rules'], (width - 450, 330))
         screen.blit(tile_images['settings_2'], (width - 450, 510))
         screen.blit(tile_images['exit'], (width - 450, 690))
+        screen.blit(tile_images['name'], (200, 250))
 
         # проверяем то, что я описал в exit_screen
         for ev in pygame.event.get():
@@ -87,8 +88,127 @@ def start_screen():
         clock.tick(FPS)
 
 
+def lose_screen():
+    screen.fill('black')
+
+    lose_win_x, lose_win_y = (width - 800) // 2, (height - 600) // 2
+
+    font = pygame.font.SysFont('Rubik', 36)
+
+    text = "press any key to continue"
+
+    colors = [(255, 255, 255), (223, 223, 233), (191, 191, 191), (159, 159, 159), (127, 127, 127), (95, 95, 95),
+              (63, 63, 63), (31, 31, 31), (0, 0, 0), (31, 31, 31), (63, 63, 63), (95, 95, 95), (127, 127, 127),
+              (159, 159, 159), (191, 191, 191), (223, 223, 233)]
+
+    i = 0
+
+    fade_count = 1
+
+    press_call_down = 150
+
+    while True:
+        fon.set_volume(volume / 100)
+
+        screen.blit(tile_images['lose_screen'], (lose_win_x + 30, lose_win_y))
+
+        if press_call_down == 0:
+            rend_text = font.render(text, False, colors[i % 16])
+
+            screen.blit(rend_text, (lose_win_x + 180, lose_win_y + 600))
+
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                terminate()
+            elif (ev.type == pygame.KEYDOWN or (ev.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_focused()))\
+                    and press_call_down == 0:
+                return
+
+        if fade_count % 11 == 0:
+            i += 1
+
+        if press_call_down > 0:
+            press_call_down -= 1
+
+        fade_count += 1
+        fade_count %= 11
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def win_screen():
+    win_win_x, win_win_y = (width - 800) // 2, (height - 600) // 2
+
+    text = "press any key to continue"
+
+    win_text = 'Y O U   W O N !'
+
+    colors = [(255, 255, 255), (223, 223, 233), (191, 191, 191), (159, 159, 159), (127, 127, 127), (95, 95, 95),
+              (63, 63, 63), (31, 31, 31), (0, 0, 0), (31, 31, 31), (63, 63, 63), (95, 95, 95), (127, 127, 127),
+              (159, 159, 159), (191, 191, 191), (223, 223, 233)]
+
+    i = 0
+
+    fade_count = 1
+
+    press_call_down = 250
+
+    call_down = 0
+
+    while True:
+        screen.fill('black')
+        fon.set_volume(volume / 100)
+        if call_down == 0:
+            for _ in range(10):
+                pos = [random.randint(50, width), random.randint(50, height)]
+
+                create_particles(pos)
+
+                call_down = 60
+
+        font = pygame.font.SysFont('Rubik', 72)
+
+        rend_text = font.render(win_text, True, (76, 255, 0))
+
+        screen.blit(rend_text, (win_win_x + 180, win_win_y))
+
+        if press_call_down == 0:
+            font = pygame.font.SysFont('Rubik', 36)
+
+            rend_text = font.render(text, False, colors[i % 16])
+
+            screen.blit(rend_text, (win_win_x + 170, win_win_y + 600))
+
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                terminate()
+            elif (ev.type == pygame.KEYDOWN or (ev.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_focused())) \
+                    and press_call_down == 0:
+                return
+
+        if fade_count % 11 == 0:
+            i += 1
+
+        fade_count += 1
+        fade_count %= 11
+
+        if call_down > 0:
+            call_down -= 1
+
+        if press_call_down > 0:
+            press_call_down -= 1
+
+        particles_gr.update()
+        particles_gr.draw(screen)
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 def pause_menu():
     pygame.mouse.set_visible(True)
+    screen.fill('black')
     menu_x, menu_y = (width - 400) // 2, (height - 500) // 2
 
     while True:
@@ -120,6 +240,7 @@ def pause_menu():
 
 
 def rules():
+    screen.fill('black')
     rules_win_x, rules_win_y = (width - 500) // 2, (height - 600) // 2
     # rules_text = ["ЗАСТАВКА", "",
     #               "Правила игры",
@@ -142,6 +263,8 @@ def rules():
     # на закомменченое не обращай внимания, это было в уроке, в игре оно роли не играет никакой
     # дальше здесь аналогично start_screen
     while True:
+        screen.fill('black')
+
         fon.set_volume(volume / 100)
         screen.blit(tile_images['rules_win'], (rules_win_x, rules_win_y))
         screen.blit(tile_images['back'], (rules_win_x + 175, rules_win_y + 500))
@@ -164,6 +287,7 @@ def rules():
 
 
 def settings():
+    screen.fill('black')
     global FPS, volume
     pygame.mouse.set_visible(True)
     set_win_x, set_win_y = (width - 400) // 2, (height - 500) // 2
@@ -233,14 +357,27 @@ def generate_level(lvl):
             elif lvl[y][x] == '@':
                 Grass('empty', x, y)
                 new_player = Player(x, y)
+            elif lvl[y][x] == '?':
+                Grass('empty', x, y)
+                mob = Mob(x, y)
     return new_player, x, y
 
 
+def grass_choose():
+    x = random.randint(0, 3)
+    return grass_pack[x]
+
+
 tile_width = tile_height = ceil = 50
+
+grass_pack = ['grass.png', 'grass4.jpg', 'grass2.jpg', 'grass3.jpg']
+
 # это словарь со всеми изображениями, которые доступны по их названию
 tile_images = {
-    'wall': load_image('box.png'),
-    'empty': load_image('grass.png'),
+    # 'wall': load_image('box.png'),
+    'wall': pygame.transform.scale(load_image('block2.jpg'), (ceil, ceil)),
+    # 'empty': load_image('grass.png'),
+    'empty': pygame.transform.scale(load_image(grass_choose()), (ceil, ceil)),
     'settings': load_image('gui/settings.png'),
     'quit': load_image('gui/quit.png'),
     'resume': load_image('gui/resume.png'),
@@ -262,7 +399,12 @@ tile_images = {
     'yes': load_image('gui/yes.png'),
     'no': load_image('gui/no.png'),
     'exit_win': load_image('gui/exit_win.png'),
-    'idle': load_image('idle.png')
+    'idle': pygame.transform.scale(load_image('idle.png'), (ceil - 1, ceil - 1)),
+    'lose_screen': load_image('lose_screen.png'),
+    'star': load_image('star.png'),
+    'water': load_image('water.jpg'),
+    'fire': pygame.transform.scale(load_image('fire.png'), (20, 20)),
+    'name': load_image('name.png')
 }
 
 
@@ -276,10 +418,46 @@ def cut_sheet(sheet, columns, rows):
         for i in range(columns):
             frame_location = (rect.w * i,  rect.h * j)
             row.append(pygame.transform.scale(sheet.subsurface(pygame.Rect(
-                frame_location, rect.size)), (ceil, ceil)))
+                frame_location, rect.size)), (ceil - 1, ceil - 1)))
         frames.append(row)
 
     return frames
+
+
+def create_particles(position):
+    # количество создаваемых частиц
+    particle_count = 25
+    # возможные скорости
+    numbers = range(-10, 10)
+    for _ in range(particle_count):
+        Particle(position, random.choice(numbers), random.choice(numbers))
+
+
+def render_bar(pos, size, current, maxx, colors, render_text: bool = False, font=None):
+    """Если render_text == True, то на полосе будудут отображены цифры
+    Если True, то необходимо передать font - шрифт для отрисовки тектса"""
+    if render_text and font is None:
+        raise ValueError('Не передан font при render_text==True')
+
+    w, h = size
+    bar = pygame.surface.Surface((w, h), )
+    k = current / maxx
+
+    pygame.draw.rect(bar, colors['true'], [0, 0, w * k, h])
+    pygame.draw.rect(bar, colors['missing'], [w * k, 0, w * (1 - k), h])
+    pygame.draw.rect(bar, colors['borders'], bar.get_rect(), 2)
+
+    # Рисуем
+    w_bar, h_bar = bar.get_size()
+    screen.blit(bar, (pos[0] - w_bar // 2, pos[1], w_bar, h_bar))
+
+    if render_text:
+        # Создаём текст
+        text = f' {int(current)} / {int(maxx)} '
+        text = font.render(text, True, (255, 255, 255), )
+
+        w_txt, h_txt = text.get_size()
+        screen.blit(text, (pos[0] - w_txt // 2, pos[1] - h_bar // 2 + h_txt // 2, w_txt, h_txt))
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -312,6 +490,39 @@ class Grass(Sprite):
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y)
+
+
+class Particle(pygame.sprite.Sprite):
+    # сгенерируем частицы разного размера
+    fire = [tile_images['star']]
+    for scale in (20, 25, 30, 35, 40, 45, 50):
+        fire.append(pygame.transform.scale(fire[0], (scale, scale)))
+
+    def __init__(self, pos, dx, dy, fir=0):
+        super().__init__(all_sprites, particles_gr)
+        self.image = random.choice(self.fire)
+        self.rect = self.image.get_rect()
+        if fir:
+            self.image = tile_images['fire']
+
+        # у каждой частицы своя скорость — это вектор
+        self.velocity = [dx, dy]
+        # и свои координаты
+        self.rect.x, self.rect.y = pos
+
+        # гравитация будет одинаковой (значение константы)
+        self.gravity = 1
+
+    def update(self):
+        # применяем гравитационный эффект:
+        # движение с ускорением под действием гравитации
+        self.velocity[1] += self.gravity
+        # перемещаем частицу
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        # убиваем, если частица ушла за экран
+        if not self.rect.colliderect(0, 0, width, height):
+            self.kill()
 
 
 class Character:
@@ -359,53 +570,10 @@ class Character:
 
         self.facing = 1
 
-    def walk(self, x, y):
-        global player
-        pl = player
-        # direction - массив из двух int-элементов 0, 1 или -1
-        if not x and not y:
-            return
-
-        m = self.speed
-        if x and y:
-            m = (self.speed ** 2 / 2) ** 0.5
-        motion = np.array([m * x, m * y], dtype=np.float32)
-        self.velocity += motion
-
-        if hasattr(self, 'walk_time'):
-            self.walk_time += 1
-
-        # block_hit_list = []
-        # for block in obstacles_gr:
-        #     if pygame.sprite.collide_rect(pl, block):
-        #         block_hit_list.append(block)
-        #
-        # for block in block_hit_list:
-        #     if self.velocity[0] > 0 and pl.rect.right + self.velocity[0] > block.rect.left:
-        #         self.velocity[0] = 0
-        #         pl.rect.right = block.rect.left - 1
-        #     elif self.velocity[0] < 0 and pl.rect.left - self.velocity[0] < block.rect.right:
-        #         self.velocity[0] = 0
-        #         pl.rect.left = block.rect.right + 1
-        #
-        # block_hit_list = []
-        # for block in obstacles_gr:
-        #     if pygame.sprite.collide_rect(pl, block):
-        #         block_hit_list.append(block)
-        #
-        # for block in block_hit_list:
-        #     if self.velocity[1] > 0 and pl.rect.bottom + self.velocity[1] > block.rect.top:
-        #         self.velocity[1] = 0
-        #         pl.rect.bottom = block.rect.top - 1
-        #     elif self.velocity[1] < 0 and pl.rect.top - self.velocity[1] < block.rect.bottom:
-        #         self.velocity[1] = 0
-        #         pl.rect.top = block.rect.bottom + 1
-
-        return motion
-
-    def update(self, pl) -> None:
+    def update(self, pl):
         v = self.velocity
         self.position += v
+        # print(self.velocity, 1)
 
         # Направление взгляда
         if v[0] > 0 and self.facing == -1 or v[0] < 0 and self.facing == 1:
@@ -415,27 +583,28 @@ class Character:
 
         # Проверка коллизии
         if hasattr(self, 'rect'):
-            block_hit_list = []
-            for block in obstacles_gr:
-                if pygame.sprite.collide_rect(pl, block):
-                    block_hit_list.append(block)
-
-            for block in block_hit_list:
-                if self.velocity[0] > 0 and pl.rect.right + self.velocity[0] > block.rect.left:
-                    self.position[0] = block.rect.left - ceil
-                elif self.velocity[0] < 0 and pl.rect.left - self.velocity[0] < block.rect.right:
-                    self.position[0] = block.rect.right
-
-            block_hit_list = []
-            for block in obstacles_gr:
-                if pygame.sprite.collide_rect(pl, block):
-                    block_hit_list.append(block)
-
-            for block in block_hit_list:
-                if self.velocity[1] > 0 and pl.rect.bottom + self.velocity[1] > block.rect.top:
-                    self.position[1] = block.rect.top - ceil
-                elif self.velocity[1] < 0 and pl.rect.top - self.velocity[1] < block.rect.bottom:
-                    self.position[1] = block.rect.bottom
+            pass
+            # block_hit_list = []
+            # for block in obstacles_gr:
+            #     if pygame.sprite.collide_rect(pl, block):
+            #         block_hit_list.append(block)
+            #
+            # for block in block_hit_list:
+            #     if self.velocity[0] > 0 and self.position[0] + ceil > block.rect.left:
+            #         self.position[0] = block.rect.left - ceil
+            #     elif self.velocity[0] < 0 and self.position[0] < block.rect.right:
+            #         self.position[0] = block.rect.right
+            #
+            # block_hit_list = []
+            # for block in obstacles_gr:
+            #     if pygame.sprite.collide_rect(pl, block):
+            #         block_hit_list.append(block)
+            #
+            # for block in block_hit_list:
+            #     if self.velocity[1] > 0 and self.position[1] + ceil > block.rect.top:
+            #         self.position[1] = block.rect.top - ceil
+            #     elif self.velocity[1] < 0 and self.position[1] < block.rect.bottom:
+            #         self.position[1] = block.rect.bottom
             # if collided:
             #     c = collided[0]
             #
@@ -445,7 +614,7 @@ class Character:
             #     bottom = self.position[1]
 
         # Обнуляем скорость
-        v -= v
+        v = 0
 
         if hasattr(self, 'rect'):
             self.rect.x = int(self.position[0])
@@ -474,74 +643,51 @@ class Character:
         return self.health[0] > 0
 
     # RENDER
-    def render_health(self, pos: list = None):
+    def render_health(self, pl, pos: list = None):
         """Если передан pos, то здоровье нарисуется в переданной точке
         Иначе он нарисуется чуть выше этого персонажа"""
         if pos is None:
             if hasattr(self, 'rect'):
-                pos = self.position
+                pos = pl.position
                 pos = [pos[0] + self.rect.w // 2 + self.bar_offset_health[0], pos[1] + self.bar_offset_health[1]]
             else:
                 return
 
         # Создаём полосу здоровья
-        render_bar(pos, self.bar_size_health, *self.health, colors=self.bar_colors_health, render_text=True, font=self.stat_font)
+        render_bar((pos[0] + 25, pos[1] + 40), self.bar_size_health, *self.health, colors=self.bar_colors_health,
+                   render_text=True, font=self.stat_font)
 
-    def render_mana(self, pos: list = None):
+    def render_mana(self, pl, pos: list = None):
         """Если передан pos, то здоровье нарисуется в переданной точке
                 Иначе он нарисуется чуть выше этого персонажа"""
         if pos is None:
             if hasattr(self, 'rect'):
-                pos = self.position
-                pos = [pos[0] + self.rect.w // 2 + self.bar_offset_mana[0], pos[1] + self.bar_offset_mana[1] + self.bar_size_mana[1]]
+                pos = pl.position
+                pos = [pos[0] + self.rect.w // 2 + self.bar_offset_mana[0],
+                       pos[1] + self.bar_offset_mana[1] + self.bar_size_mana[1]]
             else:
                 return
 
-        render_bar(pos, self.bar_size_health, *self.mana, colors=self.bar_colors_mana, render_text=True, font=self.stat_font)
-
-
-def render_bar(pos, size, current, maxx, colors, render_text: bool = False, font=None):
-    """Если render_text == True, то на полосе будудут отображены цифры
-    Если True, то необходимо передать font - шрифт для отрисовки тектса"""
-    if render_text and font is None:
-        raise ValueError('Не передан font при render_text==True')
-
-    w, h = size
-    bar = pygame.surface.Surface((w, h), )
-    k = current / maxx
-
-    pygame.draw.rect(bar, colors['true'], [0, 0, w * k, h])
-    pygame.draw.rect(bar, colors['missing'], [w * k, 0, w * (1 - k), h])
-    pygame.draw.rect(bar, colors['borders'], bar.get_rect(), 2)
-
-    # Рисуем
-    w_bar, h_bar = bar.get_size()
-    screen.blit(bar, (pos[0] - w_bar // 2, pos[1], w_bar, h_bar))
-
-    if render_text:
-        # Создаём текст
-        text = f' {int(current)} / {int(maxx)} '
-        text = font.render(text, True, (255, 255, 255), )
-
-        w_txt, h_txt = text.get_size()
-        screen.blit(text, (pos[0] - w_txt // 2, pos[1] - h_bar // 2 + h_txt // 2, w_txt, h_txt))
+        render_bar((pos[0] + 25, pos[1] + 60), self.bar_size_health, *self.mana, colors=self.bar_colors_mana,
+                   render_text=True, font=self.stat_font)
 
 
 class Player(Sprite, Character):
-    health = [180, 180]
-    mana = [120, 120]
+    arrow_delay = 90
+
+    mana_regen = 7 / 60
 
     speed = 5
-
-    arrow_delay = 90
-    mana_regen = 7 / 60
 
     # класс игрока, самый сложный
     def __init__(self, pos_x, pos_y):
         super().__init__(player_gr, all_sprites)
         pos_x *= tile_width
         pos_y *= tile_height
-        Character.__init__(self, [pos_x, pos_y], self.__class__.health, self.__class__.mana)
+
+        self.health = [250, 250]
+        self.mana = [120, 120]
+        Character.__init__(self, [pos_x, pos_y], self.health, self.mana)
 
         # группа с картинками, каждая из которых отдельный кадр из анимации бега
         self.walk_frames = cut_sheet(tile_images['player'], 8, 1)
@@ -565,12 +711,24 @@ class Player(Sprite, Character):
         self.current_arrow_delay = 0
         self.arrow_delay = self.__class__.arrow_delay
 
+    def walk(self, x, y):
+        if x and y:
+            m = ((self.speed ** 2) / 2) ** 0.5
+            self.velocity = [x * m, y * m]
+        else:
+            self.velocity = [self.speed * x, self.speed * y]
+
+        if hasattr(self, 'walk_time'):
+            self.walk_time += 1
+
     def update(self):
         # ARROW
         if self.current_arrow_delay < self.arrow_delay:
             self.current_arrow_delay += 1
         else:
             self.regen_mana(self.mana_regen)
+
+        self.rect.x += self.velocity[0]
 
         # UPDATE ANIMATION
         if any(self.velocity):
@@ -588,9 +746,11 @@ class Player(Sprite, Character):
 
         for block in block_hit_list:
             if self.velocity[0] > 0 and self.rect.right > block.rect.left:
-                self.rect.right = block.rect.left
+                self.rect.right = block.rect.left - 1
             elif self.velocity[0] < 0 and self.rect.left < block.rect.right:
-                self.rect.left = block.rect.right
+                self.rect.left = block.rect.right + 1
+
+        self.rect.y += self.velocity[1]
 
         block_hit_list = []
         for block in obstacles_gr:
@@ -599,20 +759,24 @@ class Player(Sprite, Character):
 
         for block in block_hit_list:
             if self.velocity[1] > 0 and self.rect.bottom > block.rect.top:
-                self.rect.bottom = block.rect.top
+                self.rect.bottom = block.rect.top - 1
+
             elif self.velocity[1] < 0 and self.rect.top < block.rect.bottom:
-                self.rect.top = block.rect.bottom
+                self.rect.top = block.rect.bottom + 1
 
         # PLAYER
-        Character.update(self, self)
+        # Character.update(self, self)
 
         # Если смотрит влево, то поворачиваем картинку
-        if self.facing == -1:
+        if self.facing == -1 and self.velocity[0] > 0 or self.facing == 1 and self.velocity[0] < 0:
             self.flip()
 
+        # Character.render_mana(self, self, [self.rect.x, self.rect.y])
+        # Character.render_health(self, self, [self.rect.x, self.rect.y])
+
     def post_draw(self, surf, *args, **kwargs):
-        Character.render_health(self, )
-        Character.render_mana(self, )
+        Character.render_health(self, self, [self.rect.x, self.rect.y])
+        Character.render_mana(self, self, [self.rect.x, self.rect.y])
 
     def shoot_arrow(self):
         if self.current_arrow_delay < self.arrow_delay:
@@ -638,7 +802,7 @@ class Player(Sprite, Character):
 
         #
         if player.mana[0] >= 20:
-            Arrow(arrow_gr, *self.position, velocity)
+            Arrow(arrow_gr, self.rect.x, self.rect.y, velocity)
             self.current_arrow_delay = 0
             player.mana[0] -= 20
 
@@ -646,8 +810,7 @@ class Player(Sprite, Character):
 class Mob(Sprite, Character, PatrolAI):
     image = tile_images['idle']
 
-    health = [40, 40]
-    mana = [0, 2000]
+    mana_regen = 11 / 50
 
     speed = 5
 
@@ -657,22 +820,127 @@ class Mob(Sprite, Character, PatrolAI):
 
         pos_x *= tile_width
         pos_y *= tile_height
-        Character.__init__(self, [pos_x, pos_y], self.__class__.health, self.__class__.mana)
+
+        self.health = [200, 200]
+        self.mana = [0, 500]
+
+        Character.__init__(self, [pos_x, pos_y], self.health, self.mana)
 
         self.rect = self.image.get_rect()
         self.rect.x = pos_x
         self.rect.y = pos_y
 
-    def update(self, *args, **kwargs) -> None:
-        PatrolAI.update(self)
-        Character.update(self, self)
+        self.velocity = [0, 0]
 
-        self.render_health()
-        self.render_mana()
-        self.regen_mana(1)
+        self.damage = 20
+
+        self.call_down = 0
+
+        self.walk_call_down = 0
+
+        self.facing = 1
+
+    def update(self, *args, **kwargs) -> None:
+        # PatrolAI.update(self, self)
+
+        if pygame.sprite.collide_mask(self, player):
+            # Particle((self.rect.x, self.rect.y), 5, 0, 1)
+            # Particle((self.rect.x, self.rect.y), -5, 0, 1)
+            # Particle((self.rect.x, self.rect.y), 0, -5, 1)
+            # Particle((self.rect.x, self.rect.y), 0, 5, 1)
+            # Particle((self.rect.x, self.rect.y), 3.5, 3.5, 1)
+            # Particle((self.rect.x, self.rect.y), -3.5, 3.5, 1)
+            # Particle((self.rect.x, self.rect.y), -3.5, -3.5, 1)
+            # Particle((self.rect.x, self.rect.y), 3.5, -3.5, 1)
+            self.attack()
+
+        self.update_move()
+
+        if self.walk_call_down > 0:
+            self.velocity = [0, 0]
+
+        self.rect.x += self.velocity[0] * 2
+
+        block_hit_list = []
+
+        for block in obstacles_gr:
+            if pygame.sprite.collide_rect(self, block):
+                block_hit_list.append(block)
+
+        for block in block_hit_list:
+            if self.velocity[0] > 0 and self.rect.right > block.rect.left:
+                self.rect.right = block.rect.left - 1
+            elif self.velocity[0] < 0 and self.rect.left < block.rect.right:
+                self.rect.left = block.rect.right + 1
+
+        self.rect.y += self.velocity[1] * 2
+
+        block_hit_list = []
+
+        for block in obstacles_gr:
+            if pygame.sprite.collide_rect(self, block):
+                block_hit_list.append(block)
+
+        for block in block_hit_list:
+            if self.velocity[1] > 0 and self.rect.bottom > block.rect.top:
+                self.rect.bottom = block.rect.top - 1
+
+            elif self.velocity[1] < 0 and self.rect.top < block.rect.bottom:
+                self.rect.top = block.rect.bottom + 1
+
+        # Character.update(self, self)
+
+        if self.velocity[0] > 0 and self.facing == -1 or self.velocity[0] < 0 and self.facing == 1:
+            if hasattr(self, 'flip'):
+                self.flip()
+                self.facing = -self.facing
+
+        self.regen_mana(self.mana_regen)
+
+        if self.call_down > 0:
+            self.call_down -= 1
+
+        if self.walk_call_down > 0:
+            self.walk_call_down -= 1
 
     def die(self):
         super().die()
+
+    def attack(self):
+        if self.mana[0] >= 50:
+            if self.call_down == 0:
+                self.mana[0] -= 50
+                player.get_damage(self.damage)
+                self.call_down = 60
+                self.walk_call_down = 20
+
+    def post_draw(self, surf, *args, **kwargs):
+        Character.render_health(self, self, [self.rect.x, self.rect.y])
+        Character.render_mana(self, self, [self.rect.x, self.rect.y])
+
+    def update_move(self):
+        x, y = player.rect.x, player.rect.y
+        if x < self.rect.x:
+            if y < self.rect.y:
+                self.velocity = [-1, -1]
+            elif y > self.rect.y:
+                self.velocity = [-1, 1]
+            else:
+                self.velocity = [-1, 0]
+        elif x > self.rect.x:
+            if y < self.rect.y:
+                self.velocity = [1, -1]
+            elif y > self.rect.y:
+                self.velocity = [1, 1]
+            else:
+                self.velocity = [1, 0]
+        else:
+            if y < self.rect.y:
+                self.velocity = [0, -1]
+            elif y > self.rect.y:
+                self.velocity = [0, 1]
+            else:
+                self.velocity = [0, 0]
 
 
 class Projectile(Sprite):
@@ -696,7 +964,7 @@ class Arrow(Projectile):
     def __init__(self, gr, x, y, velocity, size=(20, 20), damage=20):
         super().__init__(gr, x, y, velocity, size)
         self.size = size
-        self.mana_cost = 20
+        self.mana_cost = 30
         self.damage = damage
 
     def post_draw(self, surf, *args, **kwargs):
@@ -715,6 +983,10 @@ class Arrow(Projectile):
         if collide:
             for x in collide:
                 x.get_damage(self.damage)
+            self.kill()
+
+        collide = pygame.sprite.spritecollide(self, obstacles_gr, False)
+        if collide:
             self.kill()
 
 
@@ -739,79 +1011,91 @@ class Camera:
         self.dy = -(target.rect.y + target.rect.h // 2 - height // 2)
 
 
-def update_hero_movement(hero: Player, keys):
+def update_hero_movement(keys):
     x, y = 0, 0
     for k in move_direction_keys.keys():
         if keys[k]:
             x += move_direction_keys[k][0]
             y += move_direction_keys[k][1]
-    hero.walk(x, y)
+    player.walk(x, y)
 
 
 if __name__ == '__main__':
-    # КНОПКИ
-    move_direction_keys = {
-        pygame.K_w: (0.0, -1.0),
-        pygame.K_s: (0.0, 1.0),
-        pygame.K_a: (-1.0, 0.0),
-        pygame.K_d: (1.0, 0.0)
-    }
-    keys_pressed = {
-        pygame.K_w: False,
-        pygame.K_s: False,
-        pygame.K_a: False,
-        pygame.K_d: False
-    }
-
     # НАСТРОЙКА, СОЗДАНИЕ ОКНА
     pygame.mixer.pre_init(44100, -16, 1, 512)
     pygame.init()
-    width, height = 1366, 768
+    width, height = 1400, 900
     size = width, height
     screen = pygame.display.set_mode(size)
-    pygame.display.set_caption('Level')
+    pygame.display.set_caption('Game')
     pygame.mouse.set_visible(True)
 
     # НАСТРОЙКИ
     fon = pygame.mixer.Sound(load_sound('Happy Walk.mp3'))
-    fps = 60
+    FPS = 60
     volume = 60
+
+    fs = 0
+    ws = 0
+
     for line in load_save():
         line = line.split()
         if line[0] == 'fps':
-            fps = int(line[1])
+            FPS = int(line[1])
         elif line[0] == 'volume':
             volume = int(line[1])
+
     clock = pygame.time.Clock()
-
-    camera = Camera()
-
-    # ГРУППЫ СПРАЙТОВ
-    # игра
-    all_sprites = SpriteGroup()
-    obstacles_gr = SpriteGroup()
-    flours_gr = SpriteGroup()
-    player_gr = SpriteGroup()
-    enemies_gr = SpriteGroup()
-    arrow_gr = SpriteGroup()
-    # меню
-    pause_menu_buttons = SpriteGroup()
-    settings_buttons = SpriteGroup()
-
-    # ЗАГРУЖАЕМ УРОВЕНЬ
-    player, level_x, level_y = generate_level(load_level('map.txt'))
-    pygame.mouse.set_visible(False)
-
-    #
-    Mob(4, 12)
 
     # ОСНОВНОЙ GAME LOOP
     running = False
     while True:
         if start_screen():
+            # КНОПКИ
+            move_direction_keys = {
+                pygame.K_w: (0.0, -1.0),
+                pygame.K_s: (0.0, 1.0),
+                pygame.K_a: (-1.0, 0.0),
+                pygame.K_d: (1.0, 0.0)
+            }
+            keys_pressed = {
+                pygame.K_w: False,
+                pygame.K_s: False,
+                pygame.K_a: False,
+                pygame.K_d: False
+            }
+
             running = True
+            camera = Camera()
+
+            # ГРУППЫ СПРАЙТОВ
+            # игра
+            all_sprites = SpriteGroup()
+            obstacles_gr = SpriteGroup()
+            flours_gr = SpriteGroup()
+            player_gr = SpriteGroup()
+            enemies_gr = SpriteGroup()
+            arrow_gr = SpriteGroup()
+            # меню
+            pause_menu_buttons = SpriteGroup()
+            settings_buttons = SpriteGroup()
+            particles_gr = SpriteGroup()
+
+            # ЗАГРУЖАЕМ УРОВЕНЬ
+            player, level_x, level_y = generate_level(load_level('map.txt'))
+            pygame.mouse.set_visible(False)
+            fs = 0
+
         while running:
-            screen.fill('black')
+            if player.health[0] <= 0:
+                fs = 1
+                break
+
+            if len(enemies_gr) == 0:
+                ws = 1
+                break
+
+            screen.blit(tile_images['water'], (0, 0))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -834,7 +1118,7 @@ if __name__ == '__main__':
                         keys_pressed[key] = False
 
             # UPDATE
-            update_hero_movement(player, keys_pressed)
+            update_hero_movement(keys_pressed)
             all_sprites.update()
             camera.update(player)
             for sprite in all_sprites:
@@ -852,4 +1136,12 @@ if __name__ == '__main__':
 
             # FLIP FRAME
             pygame.display.flip()
-            clock.tick(fps)
+            clock.tick(FPS)
+
+        if fs:
+            fs = 0
+            lose_screen()
+
+        if ws:
+            ws = 0
+            win_screen()
