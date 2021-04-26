@@ -18,8 +18,9 @@ System requirements:
 Have a computer with Python 3 + PyGame and Numpy interpreters
 ----------------------------------------------------------------
 Contacts:
-Discord: Kolobo4ek#9409
-         ZoozYa#6216
+- Discord: 
+	- Kolobo4ek#9409
+	- ZoozYa#6216
 ----------------------------------------------------------------
 All content belongs to the authors but can be used free of charge.
 Developed solely for presentation at the study
